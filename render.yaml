@@ -1,0 +1,47 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# In the Render dashboard: New > Blueprint > select this repo. It reads this
+# file and creates the service below. You'll be prompted to fill in the
+# envVars marked `sync: false` (API keys etc.) — never commit those values.
+#
+# Storage note: this starts on the free plan, which has an ephemeral
+# filesystem — your data (profile, food log, login) is wiped on every
+# redeploy. To make it durable, upgrade the `plan` below to `starter` (or
+# higher) and uncomment the `disk` block, which mounts a persistent volume at
+# DATA_DIR. See README.md "Deploy to Render" for details.
+services:
+  - type: web
+    name: healthy-weight-coach
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build
+    startCommand: npm --prefix backend start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      # Only needed if you use Google Fit sync / Google Drive backup — see
+      # README.md setup sections for how to get these. Leave blank otherwise.
+      - key: GOOGLE_FIT_CLIENT_ID
+        sync: false
+      - key: GOOGLE_FIT_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_FIT_REDIRECT_URI
+        sync: false
+      - key: GOOGLE_DRIVE_REDIRECT_URI
+        sync: false
+    # disk:
+    #   name: data
+    #   mountPath: /var/data
+    #   sizeGB: 1
