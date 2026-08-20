@@ -15,7 +15,12 @@ services:
     runtime: node
     plan: free
     branch: main
-    buildCommand: npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build
+    # --include=dev on the frontend install: NODE_ENV=production below (set
+    # for the running service) also applies during the build step, which
+    # makes plain `npm install` skip devDependencies — including vite itself,
+    # which lives there. Confirmed live on Render: build failed with
+    # "sh: 1: vite: not found" without this flag.
+    buildCommand: npm --prefix backend install && npm --prefix frontend install --include=dev && npm --prefix frontend run build
     startCommand: npm --prefix backend start
     healthCheckPath: /api/health
     envVars:
