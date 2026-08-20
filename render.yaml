@@ -26,8 +26,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATA_DIR
-        value: /var/data
+      # DATA_DIR intentionally omitted on the free plan: /var/data only
+      # becomes writable once the `disk` block below is uncommented (which
+      # requires a paid plan) — confirmed live as EACCES: permission denied
+      # otherwise. Without it, db.js falls back to a directory inside the
+      # app itself, which is always writable but wiped on every redeploy
+      # (same ephemeral-storage caveat as the free plan generally). Add
+      # DATA_DIR back, set to /var/data, once the disk block is enabled.
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: OPENAI_API_KEY
