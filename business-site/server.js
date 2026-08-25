@@ -151,7 +151,7 @@ app.post("/api/report", async (req, res) => {
     const record = {
       id: "R-" + Date.now(),
       createdAt: new Date().toISOString(),
-      contact: { name: contact.name || null, email: contact.email || null },
+      contact: { name: contact.name || null, email: contact.email || null, phone: contact.phone || null },
       report: parsed,
       transcript: messages,
     };
@@ -176,6 +176,7 @@ app.post("/api/report", async (req, res) => {
             `Ticket: ${record.id}`,
             `Name: ${contact.name || "—"}`,
             `Email: ${contact.email || "—"}`,
+            `Phone: ${contact.phone || "—"}`,
             "",
             `Business: ${parsed.business || "—"}`,
             `Services: ${(parsed.services || []).join(", ") || "—"}`,

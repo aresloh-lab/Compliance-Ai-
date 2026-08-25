@@ -112,7 +112,7 @@
     list.innerHTML = reports.map(function(r){
       var rep = r.report || {};
       var rows = [
-        ['Contact', (r.contact && (r.contact.name || r.contact.email)) ? (r.contact.name || '') + (r.contact.email ? ' · ' + r.contact.email : '') : '—'],
+        ['Contact', (r.contact && (r.contact.name || r.contact.email || r.contact.phone)) ? [r.contact.name, r.contact.email, r.contact.phone].filter(Boolean).join(' · ') : '—'],
         ['Business', rep.business || '—'],
         ['Services', (rep.services || []).join(', ') || '—'],
         ['City', rep.city || '—'],

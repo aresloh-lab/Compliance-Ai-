@@ -278,6 +278,7 @@
             <div class="field"><label for="cname">Name</label><input id="cname" required placeholder="Your name"></div>
             <div class="field"><label for="cemail">Email</label><input id="cemail" type="email" required placeholder="you@email.com"></div>
           </div>
+          <div class="field"><label for="cphone">Phone (optional)</label><input id="cphone" type="tel" placeholder="e.g. +1 555 123 4567"></div>
           <button class="btn btn-primary" type="submit">Start chatting</button>
         </form>
 
@@ -342,7 +343,7 @@
     Renovation: 'Renovation & build-out'
   };
 
-  var contact = { name: '', email: '' };
+  var contact = { name: '', email: '', phone: '' };
   var history = [];
 
   var contactForm = document.getElementById('contactForm');
@@ -369,6 +370,7 @@
     e.preventDefault();
     contact.name = document.getElementById('cname').value.trim();
     contact.email = document.getElementById('cemail').value.trim();
+    contact.phone = document.getElementById('cphone').value.trim();
     contactForm.hidden = true;
     chatArea.hidden = false;
     addMessage('assistant', 'Hi ' + (contact.name || 'there') + ' — I\'m the Threshold intake assistant. What are you looking to open, and where?');
