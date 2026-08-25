@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threshold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    --paper:#EFEDE2;
+    --paper-raised:#F8F6EC;
+    --ink:#17241C;
+    --ink-soft:#4B5C4F;
+    --line:#C9C6B4;
+    --accent:#A9782E;
+    --accent-ink:#17241C;
+    --accent2:#2F5940;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10241B;
+      --paper-raised:#163227;
+      --ink:#EDE9DA;
+      --ink-soft:#A9BBAA;
+      --line:#2F4A3B;
+      --accent:#D8A94B;
+      --accent-ink:#10241B;
+      --accent2:#7FB89A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10241B;
+    --paper-raised:#163227;
+    --ink:#EDE9DA;
+    --ink-soft:#A9BBAA;
+    --line:#2F4A3B;
+    --accent:#D8A94B;
+    --accent-ink:#10241B;
+    --accent2:#7FB89A;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Work Sans","Segoe UI",system-ui,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+  }
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;text-wrap:balance;margin:0;color:var(--ink);}
+  em{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:500;color:var(--accent);}
+  .mono{font-family:"Space Mono","Consolas",monospace;}
+  .label{font-family:"Space Mono",monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;}
+  a{color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 clamp(1.25rem,4vw,3rem);}
+  .frame{border:1px solid var(--line);position:relative;}
+  .frame::before,.frame::after{content:"";position:absolute;width:9px;height:9px;border:1px solid var(--ink-soft);opacity:0.5;}
+  .frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+  .stripes{height:14px;background:repeating-linear-gradient(45deg,var(--accent2) 0 10px,var(--paper-raised) 10px 20px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+
+  header{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--paper) 90%, transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;height:4.5rem;}
+  .brand{display:flex;align-items:center;gap:0.65rem;font-family:"Fraunces",serif;font-weight:600;font-size:1.5rem;}
+  .brand .mark{width:20px;height:26px;border:2px solid var(--accent);border-radius:11px 11px 0 0;border-bottom:none;flex:none;}
+  nav.links{display:none;gap:2rem;}
+  nav.links a{font-family:"Space Mono",monospace;font-size:0.76rem;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;color:var(--ink-soft);transition:color .15s;}
+  nav.links a:hover,nav.links a:focus-visible{color:var(--accent2);}
+  @media (min-width:760px){nav.links{display:flex;}}
+  .btn{
+    font-family:"Space Mono",monospace;font-size:0.76rem;text-transform:uppercase;letter-spacing:0.07em;
+    display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;
+    padding:0.8rem 1.35rem;border:1px solid var(--ink);background:transparent;color:var(--ink);
+    text-decoration:none;cursor:pointer;transition:transform .1s,filter .15s;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .btn-primary:hover{filter:brightness(1.07);}
+  .btn-ghost{border-color:var(--line);color:var(--ink-soft);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .nav-cta{display:none;}
+  @media (min-width:760px){.nav-cta{display:inline-flex;}}
+
+  .hero{position:relative;overflow:hidden;}
+  .hero-inner{padding:clamp(3.5rem,9vw,6.5rem) 0 clamp(3rem,6vw,5rem);}
+  .eyebrow{display:flex;align-items:center;gap:0.6rem;color:var(--accent2);margin-bottom:1.3rem;}
+  .eyebrow .rule{width:2.25rem;height:1px;background:var(--accent2);}
+  .hero h1{font-size:clamp(2.5rem,5.6vw,4.3rem);line-height:1.02;max-width:16ch;}
+  .hero-sub{max-width:48ch;color:var(--ink-soft);font-size:1.08rem;margin:1.5rem 0 2.25rem;}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:1rem;}
+  .hero-figure{margin-top:clamp(2.5rem,6vw,4rem);}
+  .window{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);}
+  .window > div{border-right:1px solid var(--line);border-top:1px solid var(--line);padding:1.4rem 1.2rem;min-height:130px;display:flex;flex-direction:column;justify-content:space-between;}
+  .window > div:last-child{border-right:none;}
+  .window .val{font-family:"Fraunces",serif;font-weight:600;font-size:1.7rem;}
+  @media (max-width:700px){.window{grid-template-columns:repeat(2,1fr);}.window > div:nth-child(2n){border-right:none;}}
+
+  section{padding:clamp(3.25rem,7vw,5.5rem) 0;}
+  .section-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1.5rem;margin-bottom:2.75rem;}
+  .section-head h2{font-size:clamp(1.9rem,3vw,2.6rem);}
+  .section-note{max-width:32ch;color:var(--ink-soft);font-size:0.95rem;}
+
+  .services{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.75rem;}
+  .plaque{background:var(--paper-raised);border:1px solid var(--line);border-radius:14px 14px 3px 3px;padding:2rem 1.5rem 1.75rem;position:relative;display:flex;flex-direction:column;gap:1rem;min-height:250px;}
+  .plaque::before{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:22px;height:9px;border:1px solid var(--ink-soft);border-bottom:none;border-radius:6px 6px 0 0;opacity:0.5;}
+  .plaque .num{color:var(--accent2);}
+  .plaque h3{font-size:1.28rem;line-height:1.08;}
+  .plaque p{margin:0;color:var(--ink-soft);font-size:0.93rem;flex:1;}
+
+  .process{list-style:none;margin:0;padding:0;counter-reset:step;}
+  .process li{display:grid;grid-template-columns:3.25rem 1fr;gap:1.4rem;padding:1.5rem 0;border-top:1px solid var(--line);align-items:baseline;}
+  .process li:last-child{border-bottom:1px solid var(--line);}
+  .process .num{font-family:"Fraunces",serif;font-weight:600;font-size:1.3rem;color:var(--accent);}
+  .process h3{font-size:1.3rem;font-weight:600;margin-bottom:0.3rem;}
+  .process p{margin:0;color:var(--ink-soft);max-width:58ch;font-size:0.95rem;}
+
+  .intake{background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .intake-grid{display:grid;grid-template-columns:1fr;gap:2.5rem;align-items:start;}
+  @media (min-width:960px){.intake-grid{grid-template-columns:1fr 1fr;}}
+
+  .chat-panel{padding:1.5rem;display:flex;flex-direction:column;gap:1rem;min-height:520px;}
+  .contact-form{display:flex;flex-direction:column;gap:1rem;}
+  .field{display:flex;flex-direction:column;gap:0.4rem;}
+  .field label{font-family:"Space Mono",monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);}
+  .field input,.field textarea{
+    font-family:"Work Sans",sans-serif;font-size:0.95rem;background:var(--paper);
+    border:1px solid var(--line);color:var(--ink);padding:0.7rem 0.85rem;
+  }
+  .field input:focus-visible,.field textarea:focus-visible{outline:2px solid var(--accent2);outline-offset:1px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media (max-width:520px){.two-col{grid-template-columns:1fr;}}
+
+  .messages{flex:1;display:flex;flex-direction:column;gap:0.75rem;overflow-y:auto;max-height:420px;padding-right:0.25rem;}
+  .msg{max-width:85%;padding:0.7rem 0.95rem;font-size:0.93rem;line-height:1.5;}
+  .msg.assistant{align-self:flex-start;background:var(--paper);border:1px solid var(--line);}
+  .msg.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);}
+  .msg.pending{opacity:0.6;font-family:"Space Mono",monospace;font-size:0.8rem;}
+  .chat-input-row{display:flex;gap:0.6rem;}
+  .chat-input-row input{flex:1;font-family:"Work Sans",sans-serif;font-size:0.95rem;background:var(--paper);border:1px solid var(--line);color:var(--ink);padding:0.75rem 0.9rem;}
+  .chat-input-row input:focus-visible{outline:2px solid var(--accent2);outline-offset:1px;}
+  .chat-actions{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;}
+
+  .ticket-wrap{position:sticky;top:6rem;}
+  .ticket{background:var(--paper);border:1px dashed var(--ink-soft);padding:1.75rem 1.5rem;position:relative;}
+  .ticket-empty{color:var(--ink-soft);font-family:"Space Mono",monospace;font-size:0.85rem;text-align:center;padding:3rem 1rem;border:1px dashed var(--line);}
+  .ticket-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px dashed var(--line);padding-bottom:0.9rem;margin-bottom:0.9rem;}
+  .ticket-head .id{font-family:"Space Mono",monospace;font-size:0.8rem;color:var(--accent2);}
+  .ticket h3{font-size:1.15rem;margin-bottom:0.9rem;}
+  .ticket-line{display:flex;justify-content:space-between;gap:1rem;font-family:"Space Mono",monospace;font-size:0.82rem;padding:0.35rem 0;border-bottom:1px dotted var(--line);}
+  .ticket-line .dim{color:var(--ink-soft);}
+  .ticket-status{margin-top:1.1rem;padding:0.85rem 1rem;font-family:"Space Mono",monospace;font-size:0.78rem;border-left:3px solid var(--accent2);background:var(--paper-raised);}
+  .ticket-actions{display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.4rem;}
+  .form-msg{font-family:"Space Mono",monospace;font-size:0.78rem;color:var(--accent2);min-height:1.2em;}
+
+  .cta-band{border-top:1px solid var(--line);}
+  .cta-grid{display:flex;flex-direction:column;gap:1.5rem;align-items:flex-start;}
+  @media (min-width:700px){.cta-grid{flex-direction:row;align-items:center;justify-content:space-between;}}
+  .cta-band h2{font-size:clamp(1.8rem,3vw,2.4rem);max-width:14ch;}
+  .contact-line{color:var(--ink-soft);font-size:0.95rem;margin-top:0.5rem;}
+  .contact-line a{border-bottom:1px solid currentColor;text-decoration:none;}
+
+  footer{padding:2.25rem 0;}
+  .foot-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;align-items:center;}
+  .foot-row .label{color:var(--ink-soft);}
+  .foot-row .links{display:flex;gap:1.5rem;}
+  .foot-row a{text-decoration:none;color:var(--ink-soft);}
+  .foot-row a:hover{color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>Threshold</div>
+    <nav class="links" aria-label="Primary">
+      <a href="#services">Services</a>
+      <a href="#process">Process</a>
+      <a href="#intake">Consult</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="#intake">Talk to us</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow label"><span class="rule"></span>Retail formation &amp; build-out studio</div>
+    <h1>Everything between the idea and the <em>ribbon-cutting</em>.</h1>
+    <p class="hero-sub">Threshold carries a retail concept through the parts that aren't the product: forming the company, planning the numbers, finding the site, designing the space, and building it out — one studio, one thread from paperwork to opening day.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#intake">Start a conversation</a>
+      <a class="btn btn-ghost" href="#services">See the five services</a>
+    </div>
+    <div class="hero-figure frame">
+      <div class="window">
+        <div><span class="label">Engagement</span><span class="val">8–20 wks</span></div>
+        <div><span class="label">Disciplines</span><span class="val">5 in-house</span></div>
+        <div><span class="label">Coverage</span><span class="val">Formation → Open</span></div>
+        <div><span class="label">First step</span><span class="val">Free chat</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stripes" aria-hidden="true"></div>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Five signs on<br>one storefront.</h2>
+      <p class="section-note label">Take one discipline, or run the full row end to end.</p>
+    </div>
+    <div class="services">
+      <article class="plaque">
+        <span class="label num">01 — Formation</span>
+        <h3>Startup &amp; entity formation</h3>
+        <p>Entity structure, registration, licensing and the founding paperwork a bank or landlord will ask to see.</p>
+      </article>
+      <article class="plaque">
+        <span class="label num">02 — Planning</span>
+        <h3>Business planning</h3>
+        <p>Projections, staffing model, and a plan built around real unit economics for your category.</p>
+      </article>
+      <article class="plaque">
+        <span class="label num">03 — Location</span>
+        <h3>Shop &amp; site location</h3>
+        <p>Foot-traffic analysis, lease comparison, and negotiation support to land the right corner.</p>
+      </article>
+      <article class="plaque">
+        <span class="label num">04 — Design</span>
+        <h3>Interior &amp; brand design</h3>
+        <p>Floor plan, materials, lighting and identity, resolved together as one drawing set.</p>
+      </article>
+      <article class="plaque">
+        <span class="label num">05 — Renovation</span>
+        <h3>Renovation &amp; build-out</h3>
+        <p>Licensed-contractor coordination, permitting, and punch-list management through final walkthrough.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="process" style="background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How a project<br>actually runs.</h2>
+      <p class="section-note label">Six stages, in order — each closes with a decision, not a deck.</p>
+    </div>
+    <ol class="process">
+      <li><span class="num mono">01</span><div><h3>Consult &amp; scope</h3><p>Walk the concept, budget, and timeline — leave with a written scope of which services apply.</p></div></li>
+      <li><span class="num mono">02</span><div><h3>Form the company</h3><p>Entity, registration, and licensing filed before any lease is signed or dollar committed.</p></div></li>
+      <li><span class="num mono">03</span><div><h3>Plan the business</h3><p>Projections and staffing sized to the site — the numbers a lender will actually check.</p></div></li>
+      <li><span class="num mono">04</span><div><h3>Find the site</h3><p>Shortlist, tour, and compare locations against the plan's traffic and rent assumptions.</p></div></li>
+      <li><span class="num mono">05</span><div><h3>Design the space</h3><p>Floor plan, materials, and identity resolved into one drawing set for the build-out.</p></div></li>
+      <li><span class="num mono">06</span><div><h3>Build &amp; open</h3><p>Permits pulled, contractors managed, punch list closed — on site through the final walkthrough.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="intake" class="intake">
+  <div class="wrap">
+    <div class="section-head" style="border-bottom:none;margin-bottom:2rem;">
+      <h2>Talk to the<br>intake assistant.</h2>
+      <p class="section-note label">A real Claude-powered assistant asks what it needs to know, then drafts a report for our team.</p>
+    </div>
+    <div class="intake-grid">
+      <div class="chat-panel frame">
+
+        <form class="contact-form" id="contactForm">
+          <div class="two-col">
+            <div class="field"><label for="cname">Name</label><input id="cname" required placeholder="Your name"></div>
+            <div class="field"><label for="cemail">Email</label><input id="cemail" type="email" required placeholder="you@email.com"></div>
+          </div>
+          <button class="btn btn-primary" type="submit">Start chatting</button>
+        </form>
+
+        <div id="chatArea" hidden style="display:flex;flex-direction:column;gap:1rem;flex:1;">
+          <div class="messages" id="messages"></div>
+          <form class="chat-input-row" id="chatForm">
+            <input id="chatInput" placeholder="Tell us what you're opening..." autocomplete="off">
+            <button class="btn btn-primary" type="submit">Send</button>
+          </form>
+          <div class="chat-actions">
+            <button class="btn btn-ghost" id="generateReport" type="button">Generate report for the studio</button>
+            <span class="form-msg" id="chatMsg" role="status"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-wrap">
+        <div class="ticket-empty" id="ticketEmpty">Start a chat and click "Generate report" — the brief the studio receives will appear here.</div>
+        <div class="ticket frame" id="ticket" hidden>
+          <div class="ticket-head">
+            <span class="label">Threshold · Consult Report</span>
+            <span class="id mono" id="tId"></span>
+          </div>
+          <h3>Project brief</h3>
+          <div id="ticketLines"></div>
+          <div class="ticket-status" id="ticketStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="contact">
+  <div class="wrap cta-grid">
+    <div>
+      <h2>Prefer to just talk it through?</h2>
+      <p class="contact-line">Skip the form — write to us directly and mention what you're opening.</p>
+      <p class="contact-line"><strong style="color:var(--ink);">Email:</strong> <a href="mailto:hello@threshold.studio">hello@threshold.studio</a></p>
+    </div>
+    <a class="btn btn-primary" href="#intake">Start with the chat instead</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <span class="label">© 2026 Threshold Studio</span>
+    <span class="links label">
+      <a href="#services">Services</a>
+      <a href="#process">Process</a>
+      <a href="#intake">Consult</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var SERVICE_LABELS = {
+    Formation: 'Startup & entity formation',
+    Planning: 'Business planning',
+    Location: 'Shop & site location',
+    Design: 'Interior & brand design',
+    Renovation: 'Renovation & build-out'
+  };
+
+  var contact = { name: '', email: '' };
+  var history = [];
+
+  var contactForm = document.getElementById('contactForm');
+  var chatArea = document.getElementById('chatArea');
+  var messagesEl = document.getElementById('messages');
+  var chatForm = document.getElementById('chatForm');
+  var chatInput = document.getElementById('chatInput');
+  var chatMsg = document.getElementById('chatMsg');
+  var generateBtn = document.getElementById('generateReport');
+
+  var ticketEmpty = document.getElementById('ticketEmpty');
+  var ticket = document.getElementById('ticket');
+
+  function addMessage(role, text){
+    var el = document.createElement('div');
+    el.className = 'msg ' + role;
+    el.textContent = text;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  contactForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    contact.name = document.getElementById('cname').value.trim();
+    contact.email = document.getElementById('cemail').value.trim();
+    contactForm.hidden = true;
+    chatArea.hidden = false;
+    addMessage('assistant', 'Hi ' + (contact.name || 'there') + ' — I\'m the Threshold intake assistant. What are you looking to open, and where?');
+    chatInput.focus();
+  });
+
+  chatForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var text = chatInput.value.trim();
+    if (!text) return;
+    chatInput.value = '';
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+
+    var pending = addMessage('assistant pending', 'Thinking...');
+    chatMsg.textContent = '';
+
+    try{
+      var res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history })
+      });
+      var data = await res.json();
+      pending.remove();
+      if (!res.ok) {
+        chatMsg.textContent = data.error || 'Something went wrong.';
+        return;
+      }
+      addMessage('assistant', data.reply);
+      history.push({ role: 'assistant', content: data.reply });
+    } catch(err){
+      pending.remove();
+      chatMsg.textContent = 'Could not reach the server.';
+    }
+  });
+
+  generateBtn.addEventListener('click', async function(){
+    if (!history.length) {
+      chatMsg.textContent = 'Send at least one message first.';
+      return;
+    }
+    generateBtn.disabled = true;
+    chatMsg.textContent = 'Drafting report...';
+
+    try{
+      var res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, contact: contact })
+      });
+      var data = await res.json();
+      if (!res.ok) {
+        chatMsg.textContent = data.error || 'Could not generate the report.';
+        return;
+      }
+
+      var r = data.report;
+      document.getElementById('tId').textContent = data.id + ' · ' + new Date().toLocaleDateString();
+
+      var lines = [
+        ['Business', r.business || '—'],
+        ['Services', (r.services || []).map(function(s){ return SERVICE_LABELS[s] || s; }).join(', ') || '—'],
+        ['City', r.city || '—'],
+        ['Budget', r.budget || '—'],
+        ['Timeline', r.timeline || '—']
+      ];
+      document.getElementById('ticketLines').innerHTML = lines.map(function(l){
+        return '<div class="ticket-line"><span>' + l[0] + '</span><span class="dim">' + l[1] + '</span></div>';
+      }).join('') + '<p style="margin-top:1rem;color:var(--ink-soft);font-size:0.9rem;">' + (r.summary || '') + '</p>';
+
+      document.getElementById('ticketStatus').textContent = data.emailed
+        ? '✓ Emailed to the studio just now.'
+        : '✓ Saved for the studio (email delivery isn\'t configured yet).';
+
+      ticketEmpty.hidden = true;
+      ticket.hidden = false;
+      chatMsg.textContent = 'Report sent.';
+    } catch(err){
+      chatMsg.textContent = 'Could not reach the server.';
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

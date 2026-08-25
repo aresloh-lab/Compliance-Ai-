@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threshold · Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..700&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    --paper:#EFEDE2; --paper-raised:#F8F6EC; --ink:#17241C; --ink-soft:#4B5C4F;
+    --line:#C9C6B4; --accent:#A9782E; --accent-ink:#17241C; --accent2:#2F5940;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10241B; --paper-raised:#163227; --ink:#EDE9DA; --ink-soft:#A9BBAA;
+      --line:#2F4A3B; --accent:#D8A94B; --accent-ink:#10241B; --accent2:#7FB89A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10241B; --paper-raised:#163227; --ink:#EDE9DA; --ink-soft:#A9BBAA;
+    --line:#2F4A3B; --accent:#D8A94B; --accent-ink:#10241B; --accent2:#7FB89A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Work Sans",system-ui,sans-serif;font-size:15px;line-height:1.55;}
+  h1,h2{font-family:"Fraunces",Georgia,serif;font-weight:700;margin:0;}
+  .mono{font-family:"Space Mono",monospace;}
+  .wrap{max-width:900px;margin:0 auto;padding:2.5rem clamp(1.25rem,4vw,2rem) 5rem;}
+  header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+  header h1{font-size:1.8rem;}
+  a.brand-link{color:var(--ink-soft);text-decoration:none;font-family:"Space Mono",monospace;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.07em;}
+
+  .gate{border:1px solid var(--line);background:var(--paper-raised);padding:2rem;display:flex;flex-direction:column;gap:1rem;max-width:420px;}
+  .gate label{font-family:"Space Mono",monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);}
+  .gate input{font-family:"Work Sans",sans-serif;font-size:0.95rem;padding:0.7rem 0.85rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+  button{font-family:"Space Mono",monospace;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.07em;padding:0.75rem 1.2rem;border:1px solid var(--ink);background:var(--accent);color:var(--accent-ink);border-color:var(--accent);cursor:pointer;}
+  button:hover{filter:brightness(1.07);}
+  .msg{font-family:"Space Mono",monospace;font-size:0.8rem;color:var(--accent2);min-height:1.2em;}
+
+  .list{display:flex;flex-direction:column;gap:1.25rem;}
+  .card{border:1px solid var(--line);background:var(--paper-raised);padding:1.5rem;}
+  .card-head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px dashed var(--line);padding-bottom:0.85rem;margin-bottom:0.85rem;}
+  .card-head .id{color:var(--accent2);}
+  .card-head .date{color:var(--ink-soft);}
+  .row{display:grid;grid-template-columns:110px 1fr;gap:0.5rem;padding:0.3rem 0;font-size:0.9rem;}
+  .row .k{color:var(--ink-soft);}
+  .summary{margin-top:0.85rem;padding-top:0.85rem;border-top:1px dashed var(--line);font-size:0.92rem;}
+  details{margin-top:0.85rem;}
+  summary{cursor:pointer;font-family:"Space Mono",monospace;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);}
+  .transcript{margin-top:0.6rem;display:flex;flex-direction:column;gap:0.5rem;}
+  .tmsg{padding:0.5rem 0.7rem;font-size:0.85rem;background:var(--paper);border:1px solid var(--line);}
+  .tmsg .who{font-family:"Space Mono",monospace;font-size:0.68rem;color:var(--ink-soft);display:block;margin-bottom:0.2rem;}
+  .empty{color:var(--ink-soft);font-family:"Space Mono",monospace;font-size:0.85rem;padding:2rem;text-align:center;border:1px dashed var(--line);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Consult reports</h1>
+    <a class="brand-link" href="/">← Back to site</a>
+  </header>
+
+  <div class="gate" id="gate">
+    <label for="key">Admin key</label>
+    <input id="key" type="password" placeholder="Paste your ADMIN_KEY" autocomplete="off">
+    <button id="loadBtn">View reports</button>
+    <span class="msg" id="gateMsg"></span>
+  </div>
+
+  <div id="results" style="display:none;">
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var keyInput = document.getElementById('key');
+  var loadBtn = document.getElementById('loadBtn');
+  var gateMsg = document.getElementById('gateMsg');
+  var gate = document.getElementById('gate');
+  var results = document.getElementById('results');
+  var list = document.getElementById('list');
+
+  var saved = localStorage.getItem('threshold_admin_key');
+  if (saved) keyInput.value = saved;
+
+  async function load(){
+    var key = keyInput.value.trim();
+    if (!key) { gateMsg.textContent = 'Enter the admin key.'; return; }
+    gateMsg.textContent = 'Loading...';
+    try{
+      var res = await fetch('/api/reports', { headers: { 'x-admin-key': key } });
+      if (res.status === 401) {
+        gateMsg.textContent = 'Wrong key.';
+        return;
+      }
+      var data = await res.json();
+      localStorage.setItem('threshold_admin_key', key);
+      render(data.reports || []);
+      gate.style.display = 'none';
+      results.style.display = 'block';
+    } catch(err){
+      gateMsg.textContent = 'Could not reach the server.';
+    }
+  }
+
+  function render(reports){
+    if (!reports.length) {
+      list.innerHTML = '<div class="empty">No reports yet.</div>';
+      return;
+    }
+    list.innerHTML = reports.map(function(r){
+      var rep = r.report || {};
+      var rows = [
+        ['Contact', (r.contact && (r.contact.name || r.contact.email)) ? (r.contact.name || '') + (r.contact.email ? ' · ' + r.contact.email : '') : '—'],
+        ['Business', rep.business || '—'],
+        ['Services', (rep.services || []).join(', ') || '—'],
+        ['City', rep.city || '—'],
+        ['Budget', rep.budget || '—'],
+        ['Timeline', rep.timeline || '—']
+      ].map(function(row){
+        return '<div class="row"><span class="k">' + row[0] + '</span><span>' + escapeHtml(String(row[1])) + '</span></div>';
+      }).join('');
+
+      var transcript = (r.transcript || []).map(function(m){
+        return '<div class="tmsg"><span class="who">' + (m.role === 'user' ? 'Client' : 'Assistant') + '</span>' + escapeHtml(m.content) + '</div>';
+      }).join('');
+
+      return '<div class="card">' +
+        '<div class="card-head"><span class="mono id">' + r.id + '</span><span class="mono date">' + new Date(r.createdAt).toLocaleString() + '</span></div>' +
+        rows +
+        '<div class="summary">' + escapeHtml(rep.summary || '') + '<br><strong>Next step:</strong> ' + escapeHtml(rep.recommended_next_step || '—') + '</div>' +
+        '<details><summary>Full conversation (' + (r.transcript || []).length + ' messages)</summary><div class="transcript">' + transcript + '</div></details>' +
+        '</div>';
+    }).join('');
+  }
+
+  function escapeHtml(s){
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  loadBtn.addEventListener('click', load);
+  keyInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') load(); });
+  if (saved) load();
+})();
+</script>
+</body>
+</html>
