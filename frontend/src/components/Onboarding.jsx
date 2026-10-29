@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { COUNTRIES } from "../countries.js";
+import { RACE_OPTIONS } from "../raceOptions.js";
 
 const CONDITIONS = [
   { id: "hypertension", label: "High blood pressure" },
@@ -27,6 +28,7 @@ const EMPTY = {
   heightCm: "",
   weightKg: "",
   nationality: "",
+  race: "",
   goalWeightKg: "",
   activityLevel: "sedentary",
   conditions: [],
@@ -154,6 +156,16 @@ export default function Onboarding({ profile, onSave }) {
           <option value="" disabled>Select...</option>
           {COUNTRIES.map((c) => (
             <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="field">
+        <label>Race/ethnicity (optional)</label>
+        <select value={form.race} onChange={(e) => update("race", e.target.value)}>
+          <option value="">Prefer not to say</option>
+          {RACE_OPTIONS.map((r) => (
+            <option key={r} value={r}>{r}</option>
           ))}
         </select>
       </div>

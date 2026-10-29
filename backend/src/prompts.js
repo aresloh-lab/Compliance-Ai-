@@ -86,17 +86,34 @@ function dietaryText(profile) {
   return all.length ? all.join(", ") : "none reported";
 }
 
+// Race/ethnicity is optional, asked directly, and used for exactly one
+// thing: WHO and multiple national health bodies document that
+// cardiometabolic risk (type 2 diabetes, hypertension) rises at a lower BMI
+// in Asian populations than the general-population cutoffs -- WHO's
+// commonly cited Asian-specific action points are overweight >=23 and
+// obese >=27.5, versus the general >=25/>=30. This is the one evidence-based
+// reason to ask; it should never otherwise shape tone, assumptions, or
+// anything besides this specific risk framing.
+function raceRiskNote(race) {
+  if (!race || race === "Prefer not to say") return "";
+  if (race === "Asian") {
+    return " Health note: cardiometabolic risk (type 2 diabetes, hypertension) tends to rise at a lower BMI for Asian populations than the general-population cutoffs -- when discussing weight-related risk, use the lower action points (overweight ~23+, obese ~27.5+) rather than the general ones (25/30), per WHO guidance.";
+  }
+  return "";
+}
+
 export function buildProfileSummary(profile) {
   if (!profile) return "No profile has been set up yet.";
   const {
     name, age, gender, heightCm, weightKg, goalWeightKg,
-    activityLevel, conditions = [], nationality,
+    activityLevel, conditions = [], nationality, race,
   } = profile;
   return [
     `Name: ${name ?? "unknown"}`,
     `Age: ${age ?? "unknown"}, Gender: ${gender ?? "unknown"}`,
     `Height: ${heightCm ?? "?"} cm, Current weight: ${weightKg ?? "?"} kg, Goal weight: ${goalWeightKg ?? "?"} kg`,
     `Nationality: ${nationality ?? "unknown"} (use this to favor food suggestions from dishes/cuisine actually familiar to them, e.g. local staples and home-style meals over generic Western defaults -- a helpful starting point, not a rule; always defer to their stated dietary preferences below over any cuisine assumption)`,
+    `Race/ethnicity: ${race || "not reported"}.${raceRiskNote(race)}`,
     `Activity level: ${activityLevel ?? "unknown"}`,
     `Health conditions: ${conditions.length ? conditions.join(", ") : "none reported"}`,
     `Dietary preferences/restrictions (always honor these in every food suggestion): ${dietaryText(profile)}`,

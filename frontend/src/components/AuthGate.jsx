@@ -4,6 +4,7 @@ import { Lock } from "lucide-react";
 import { api, authApi, inviteApi } from "../api.js";
 import HeroIllustration from "./HeroIllustration.jsx";
 import { COUNTRIES } from "../countries.js";
+import { RACE_OPTIONS } from "../raceOptions.js";
 
 const SESSION_KEY = "weightCoachUnlocked";
 const LANDING_TAB_KEY = "weightCoachLandingTab";
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
   heightCm: "",
   weightKg: "",
   nationality: "",
+  race: "",
   username: "",
   password: "",
   confirmPassword: "",
@@ -149,6 +151,7 @@ export default function AuthGate({ children }) {
           heightCm: Number(form.heightCm),
           weightKg: Number(form.weightKg),
           nationality: form.nationality.trim(),
+          race: form.race || null,
           goalWeightKg: null,
           activityLevel: "sedentary",
           conditions: [],
@@ -224,6 +227,7 @@ export default function AuthGate({ children }) {
               heightCm: Number(form.heightCm),
               weightKg: Number(form.weightKg),
               nationality: form.nationality,
+              race: form.race || null,
               goalWeightKg: null,
               activityLevel: "sedentary",
               conditions: [],
@@ -441,6 +445,15 @@ export default function AuthGate({ children }) {
                     ))}
                   </select>
                 </div>
+                <div className="field">
+                  <label>Race/ethnicity (optional)</label>
+                  <select value={form.race} onChange={(e) => update("race", e.target.value)}>
+                    <option value="">Prefer not to say</option>
+                    {RACE_OPTIONS.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
               </>
             )}
 
@@ -509,6 +522,15 @@ export default function AuthGate({ children }) {
                   <option value="" disabled>Select...</option>
                   {COUNTRIES.map((c) => (
                     <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Race/ethnicity (optional)</label>
+                <select value={form.race} onChange={(e) => update("race", e.target.value)}>
+                  <option value="">Prefer not to say</option>
+                  {RACE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
               </div>
