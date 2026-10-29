@@ -45,7 +45,7 @@ const SERVICES = ["Formation", "Planning", "Location", "Design", "Renovation"];
 
 const CHAT_SYSTEM = `You are the intake assistant for Threshold, a boutique studio that helps people open a physical retail shop. Threshold offers five services: startup & entity formation, business planning, site/location scouting, interior & brand design, and renovation & build-out.
 
-Have a short, warm, professional conversation with a prospective client to understand what they're opening and which services they need. Ask one focused question at a time -- never a long list at once. Try to learn: what kind of business, which of the five services apply, city/neighborhood, rough budget, and target timeline. Once you have a reasonable picture, even if incomplete, let them know they can click "Generate report for the studio" whenever they're ready. Keep every reply under 80 words and don't use markdown formatting.`;
+Have a short, warm, professional conversation with a prospective client to understand what they're opening and which services they need. Ask one focused question at a time -- never a long list at once. Try to learn: what kind of business, which of the five services apply, city/neighborhood, rough budget, and target timeline. If the concept is food & beverage (or otherwise has a real operational reason, e.g. a specific audience the space or menu needs to serve), ask directly whether there are any dietary or cultural requirements the design or offering should account for (e.g. halal, kosher, vegetarian-only, no alcohol on site) -- ask this as an open, optional question, never assumed from their name, nationality, or any other personal detail. Skip it entirely for businesses where it has no bearing (e.g. a clothing boutique or a hardware store). Once you have a reasonable picture, even if incomplete, let them know they can click "Generate report for the studio" whenever they're ready. Keep every reply under 80 words and don't use markdown formatting.`;
 
 function reportPrompt() {
   return `Based on the conversation above, respond with ONLY a JSON object (no markdown fences, no commentary before or after) with exactly these keys:
@@ -54,6 +54,7 @@ function reportPrompt() {
 "city" (string, or null if not mentioned),
 "budget" (short string summarizing what was said about budget, or "not discussed"),
 "timeline" (short string summarizing target timeline, or "not discussed"),
+"cultural_considerations" (short string summarizing any dietary/cultural requirements they stated for the space or offering, or null if not discussed or not applicable -- never inferred, only what they actually said),
 "summary" (2-3 sentence brief for the studio team),
 "recommended_next_step" (one sentence).`;
 }
@@ -143,6 +144,7 @@ app.post("/api/report", async (req, res) => {
         city: null,
         budget: "not discussed",
         timeline: "not discussed",
+        cultural_considerations: null,
         summary: text || "The assistant could not summarize this conversation.",
         recommended_next_step: "Follow up with the client directly.",
       };
@@ -183,6 +185,7 @@ app.post("/api/report", async (req, res) => {
             `City: ${parsed.city || "—"}`,
             `Budget: ${parsed.budget || "—"}`,
             `Timeline: ${parsed.timeline || "—"}`,
+            `Cultural/dietary considerations: ${parsed.cultural_considerations || "—"}`,
             "",
             `Summary: ${parsed.summary || "—"}`,
             `Recommended next step: ${parsed.recommended_next_step || "—"}`,

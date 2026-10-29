@@ -436,7 +436,8 @@
         ['Services', (r.services || []).map(function(s){ return SERVICE_LABELS[s] || s; }).join(', ') || '—'],
         ['City', r.city || '—'],
         ['Budget', r.budget || '—'],
-        ['Timeline', r.timeline || '—']
+        ['Timeline', r.timeline || '—'],
+        ['Cultural/dietary needs', r.cultural_considerations || '—']
       ];
       document.getElementById('ticketLines').innerHTML = lines.map(function(l){
         return '<div class="ticket-line"><span>' + l[0] + '</span><span class="dim">' + l[1] + '</span></div>';

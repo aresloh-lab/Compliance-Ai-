@@ -117,7 +117,8 @@
         ['Services', (rep.services || []).join(', ') || '—'],
         ['City', rep.city || '—'],
         ['Budget', rep.budget || '—'],
-        ['Timeline', rep.timeline || '—']
+        ['Timeline', rep.timeline || '—'],
+        ['Cultural/dietary', rep.cultural_considerations || '—']
       ].map(function(row){
         return '<div class="row"><span class="k">' + row[0] + '</span><span>' + escapeHtml(String(row[1])) + '</span></div>';
       }).join('');
