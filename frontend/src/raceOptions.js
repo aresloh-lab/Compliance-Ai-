@@ -16,3 +16,30 @@ export const RACE_OPTIONS = [
   "Mixed / multiple ethnicities",
   "Other",
 ];
+
+// Deliberately small. Each entry below mirrors that country's own official
+// census/demographic classification (sourced from its national statistics
+// office), not a guess -- it's only worth doing when there's a real,
+// confidently-sourced answer, since getting this wrong is worse than the
+// generic list above. Most countries don't classify residents by "race" at
+// all (India's census doesn't; China's complex and sometimes
+// politically fraught 56-ethnic-group system doesn't reduce sensibly to a
+// short list) -- those are intentionally left out rather than forced into
+// a Western race framework. Everything not listed here falls back to
+// RACE_OPTIONS, which is itself not a value judgment about those countries,
+// just the honest default.
+export const COUNTRY_RACE_OPTIONS = {
+  Malaysia: ["Malay", "Chinese", "Indian", "Other Bumiputera (indigenous)", "Other"],
+  Singapore: ["Chinese", "Malay", "Indian", "Other"], // the official "CMIO" model
+  "United Kingdom": [
+    "White",
+    "Asian or Asian British",
+    "Black, African, Caribbean or Black British",
+    "Mixed or multiple ethnic groups",
+    "Other ethnic group",
+  ],
+};
+
+export function getRaceOptionsForCountry(nationality) {
+  return COUNTRY_RACE_OPTIONS[nationality] ?? RACE_OPTIONS;
+}

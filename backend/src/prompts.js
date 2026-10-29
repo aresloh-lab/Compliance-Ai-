@@ -94,9 +94,26 @@ function dietaryText(profile) {
 // obese >=27.5, versus the general >=25/>=30. This is the one evidence-based
 // reason to ask; it should never otherwise shape tone, assumptions, or
 // anything besides this specific risk framing.
+//
+// For some nationalities the race selector offers locally accurate options
+// (see frontend/src/raceOptions.js's COUNTRY_RACE_OPTIONS -- e.g. Malaysia:
+// Malay/Chinese/Indian/Other Bumiputera) instead of the generic "Asian", so
+// this needs to also recognize those as falling under the same WHO guidance
+// -- they're still Asian populations, just asked about more specifically.
+// Kept duplicated here (not imported) since frontend/backend are separate
+// workspaces with no shared module today; if that changes, unify it.
+const ASIAN_POPULATION_RACE_VALUES = new Set([
+  "Asian",
+  "Malay",
+  "Chinese",
+  "Indian",
+  "Other Bumiputera (indigenous)",
+  "Asian or Asian British",
+]);
+
 function raceRiskNote(race) {
   if (!race || race === "Prefer not to say") return "";
-  if (race === "Asian") {
+  if (ASIAN_POPULATION_RACE_VALUES.has(race)) {
     return " Health note: cardiometabolic risk (type 2 diabetes, hypertension) tends to rise at a lower BMI for Asian populations than the general-population cutoffs -- when discussing weight-related risk, use the lower action points (overweight ~23+, obese ~27.5+) rather than the general ones (25/30), per WHO guidance.";
   }
   return "";

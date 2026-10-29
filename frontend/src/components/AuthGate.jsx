@@ -4,7 +4,7 @@ import { Lock } from "lucide-react";
 import { api, authApi, inviteApi } from "../api.js";
 import HeroIllustration from "./HeroIllustration.jsx";
 import { COUNTRIES } from "../countries.js";
-import { RACE_OPTIONS } from "../raceOptions.js";
+import { getRaceOptionsForCountry } from "../raceOptions.js";
 
 const SESSION_KEY = "weightCoachUnlocked";
 const LANDING_TAB_KEY = "weightCoachLandingTab";
@@ -436,23 +436,36 @@ export default function AuthGate({ children }) {
                     <input type="number" min="1" value={form.weightKg} onChange={(e) => update("weightKg", e.target.value)} required />
                   </div>
                 </div>
-                <div className="field">
-                  <label>Nationality *</label>
-                  <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
-                    <option value="" disabled>Select...</option>
-                    {COUNTRIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Race/ethnicity (optional)</label>
-                  <select value={form.race} onChange={(e) => update("race", e.target.value)}>
-                    <option value="">Prefer not to say</option>
-                    {RACE_OPTIONS.map((r) => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
+                <div className="row">
+                  <div className="field">
+                    <label>Nationality *</label>
+                    <input
+                      list="claim-nationality-options"
+                      value={form.nationality}
+                      onChange={(e) => update("nationality", e.target.value)}
+                      placeholder="Type to search or select..."
+                      required
+                    />
+                    <datalist id="claim-nationality-options">
+                      {COUNTRIES.map((c) => (
+                        <option key={c} value={c} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <div className="field">
+                    <label>Race/ethnicity (optional)</label>
+                    <input
+                      list="claim-race-options"
+                      value={form.race}
+                      onChange={(e) => update("race", e.target.value)}
+                      placeholder="Prefer not to say"
+                    />
+                    <datalist id="claim-race-options">
+                      {getRaceOptionsForCountry(form.nationality).map((r) => (
+                        <option key={r} value={r} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
               </>
             )}
@@ -516,23 +529,36 @@ export default function AuthGate({ children }) {
                   <input type="number" min="1" value={form.weightKg} onChange={(e) => update("weightKg", e.target.value)} required />
                 </div>
               </div>
-              <div className="field">
-                <label>Nationality *</label>
-                <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
-                  <option value="" disabled>Select...</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Race/ethnicity (optional)</label>
-                <select value={form.race} onChange={(e) => update("race", e.target.value)}>
-                  <option value="">Prefer not to say</option>
-                  {RACE_OPTIONS.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
+              <div className="row">
+                <div className="field">
+                  <label>Nationality *</label>
+                  <input
+                    list="register-nationality-options"
+                    value={form.nationality}
+                    onChange={(e) => update("nationality", e.target.value)}
+                    placeholder="Type to search or select..."
+                    required
+                  />
+                  <datalist id="register-nationality-options">
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
+                <div className="field">
+                  <label>Race/ethnicity (optional)</label>
+                  <input
+                    list="register-race-options"
+                    value={form.race}
+                    onChange={(e) => update("race", e.target.value)}
+                    placeholder="Prefer not to say"
+                  />
+                  <datalist id="register-race-options">
+                    {getRaceOptionsForCountry(form.nationality).map((r) => (
+                      <option key={r} value={r} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
               <div className="field">
                 <label>Login ID *</label>

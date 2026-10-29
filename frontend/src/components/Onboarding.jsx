@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { COUNTRIES } from "../countries.js";
-import { RACE_OPTIONS } from "../raceOptions.js";
+import { getRaceOptionsForCountry } from "../raceOptions.js";
 
 const CONDITIONS = [
   { id: "hypertension", label: "High blood pressure" },
@@ -150,24 +150,37 @@ export default function Onboarding({ profile, onSave }) {
         </div>
       </div>
 
-      <div className="field">
-        <label>Nationality *</label>
-        <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
-          <option value="" disabled>Select...</option>
-          {COUNTRIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      </div>
+      <div className="row">
+        <div className="field">
+          <label>Nationality *</label>
+          <input
+            list="profile-nationality-options"
+            value={form.nationality}
+            onChange={(e) => update("nationality", e.target.value)}
+            placeholder="Type to search or select..."
+            required
+          />
+          <datalist id="profile-nationality-options">
+            {COUNTRIES.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+        </div>
 
-      <div className="field">
-        <label>Race/ethnicity (optional)</label>
-        <select value={form.race} onChange={(e) => update("race", e.target.value)}>
-          <option value="">Prefer not to say</option>
-          {RACE_OPTIONS.map((r) => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
+        <div className="field">
+          <label>Race/ethnicity (optional)</label>
+          <input
+            list="profile-race-options"
+            value={form.race}
+            onChange={(e) => update("race", e.target.value)}
+            placeholder="Prefer not to say"
+          />
+          <datalist id="profile-race-options">
+            {getRaceOptionsForCountry(form.nationality).map((r) => (
+              <option key={r} value={r} />
+            ))}
+          </datalist>
+        </div>
       </div>
 
       <div className="row">
