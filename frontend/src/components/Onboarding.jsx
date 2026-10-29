@@ -7,6 +7,18 @@ const CONDITIONS = [
   { id: "highUricAcid", label: "High uric acid / gout" },
 ];
 
+// Asked directly, never inferred from name/nationality/anything else -- see
+// the comment on buildProfileSummary in backend/src/prompts.js for why.
+const DIETARY_PREFERENCES = [
+  { id: "halal", label: "Halal" },
+  { id: "kosher", label: "Kosher" },
+  { id: "vegetarian", label: "Vegetarian" },
+  { id: "vegan", label: "Vegan" },
+  { id: "noPork", label: "No pork" },
+  { id: "noBeef", label: "No beef" },
+  { id: "noAlcohol", label: "No alcohol" },
+];
+
 const EMPTY = {
   name: "",
   dob: "",
@@ -16,6 +28,8 @@ const EMPTY = {
   goalWeightKg: "",
   activityLevel: "sedentary",
   conditions: [],
+  dietaryPreferences: [],
+  dietaryPreferencesOther: "",
 };
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -41,6 +55,17 @@ export default function Onboarding({ profile, onSave }) {
       return {
         ...f,
         conditions: has ? f.conditions.filter((c) => c !== id) : [...f.conditions, id],
+      };
+    });
+    setSaved(false);
+  }
+
+  function toggleDietaryPreference(id) {
+    setForm((f) => {
+      const has = f.dietaryPreferences.includes(id);
+      return {
+        ...f,
+        dietaryPreferences: has ? f.dietaryPreferences.filter((c) => c !== id) : [...f.dietaryPreferences, id],
       };
     });
     setSaved(false);
@@ -151,6 +176,29 @@ export default function Onboarding({ profile, onSave }) {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="field">
+        <label>Dietary preferences/restrictions (optional — the coach always honors these)</label>
+        <div className="checkbox-grid">
+          {DIETARY_PREFERENCES.map((d) => (
+            <label key={d.id}>
+              <input
+                type="checkbox"
+                checked={form.dietaryPreferences.includes(d.id)}
+                onChange={() => toggleDietaryPreference(d.id)}
+              />
+              {d.label}
+            </label>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Anything else? e.g. no shellfish, Jain diet..."
+          value={form.dietaryPreferencesOther}
+          onChange={(e) => update("dietaryPreferencesOther", e.target.value)}
+          style={{ marginTop: 8 }}
+        />
       </div>
 
       <button className="primary" type="submit" disabled={saving || !isComplete}>

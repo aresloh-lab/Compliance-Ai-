@@ -72,6 +72,20 @@ function genderGuidance(gender) {
   return "";
 }
 
+// Dietary needs come straight from what the user actually selected/typed on
+// their profile, never inferred from name, nationality, or any other proxy
+// -- that kind of guess would be both inaccurate (nationality doesn't reliably
+// indicate religion or personal practice) and an unnecessary assumption about
+// a sensitive personal attribute. Asking directly is also just more useful:
+// it captures what someone actually follows, including non-religious reasons
+// (allergy, ethics, preference).
+function dietaryText(profile) {
+  const preset = profile?.dietaryPreferences ?? [];
+  const other = profile?.dietaryPreferencesOther?.trim();
+  const all = other ? [...preset, other] : preset;
+  return all.length ? all.join(", ") : "none reported";
+}
+
 export function buildProfileSummary(profile) {
   if (!profile) return "No profile has been set up yet.";
   const {
@@ -84,6 +98,7 @@ export function buildProfileSummary(profile) {
     `Height: ${heightCm ?? "?"} cm, Current weight: ${weightKg ?? "?"} kg, Goal weight: ${goalWeightKg ?? "?"} kg`,
     `Activity level: ${activityLevel ?? "unknown"}`,
     `Health conditions: ${conditions.length ? conditions.join(", ") : "none reported"}`,
+    `Dietary preferences/restrictions (always honor these in every food suggestion): ${dietaryText(profile)}`,
   ].join("\n");
 }
 
