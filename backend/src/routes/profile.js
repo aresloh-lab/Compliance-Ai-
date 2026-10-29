@@ -13,7 +13,7 @@ const router = Router();
 router.use(requireSession);
 
 router.get("/", async (req, res) => {
-  const store = await getStore();
+  const store = await getStore(req.accountId);
   res.json(store.profile);
 });
 
@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
 // guidance) is a derived number computed from "dob" here — dob is the
 // actual field the user provides and edits; age is kept in sync automatically
 // so every existing age-consuming formula/prompt needs no changes.
-const REQUIRED_FIELDS = ["name", "dob", "gender", "heightCm", "weightKg"];
+const REQUIRED_FIELDS = ["name", "dob", "gender", "heightCm", "weightKg", "nationality"];
 
 router.put("/", async (req, res) => {
   const profile = req.body;
@@ -33,7 +33,7 @@ router.put("/", async (req, res) => {
   if (age == null || age < 0 || age > 130) {
     return res.status(400).json({ error: "That date of birth doesn't look valid." });
   }
-  const store = await updateStore((s) => {
+  const store = await updateStore(req.accountId, (s) => {
     s.profile = { ...profile, age };
   });
   res.json(store.profile);

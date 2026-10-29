@@ -90,12 +90,13 @@ export function buildProfileSummary(profile) {
   if (!profile) return "No profile has been set up yet.";
   const {
     name, age, gender, heightCm, weightKg, goalWeightKg,
-    activityLevel, conditions = [],
+    activityLevel, conditions = [], nationality,
   } = profile;
   return [
     `Name: ${name ?? "unknown"}`,
     `Age: ${age ?? "unknown"}, Gender: ${gender ?? "unknown"}`,
     `Height: ${heightCm ?? "?"} cm, Current weight: ${weightKg ?? "?"} kg, Goal weight: ${goalWeightKg ?? "?"} kg`,
+    `Nationality: ${nationality ?? "unknown"} (use this to favor food suggestions from dishes/cuisine actually familiar to them, e.g. local staples and home-style meals over generic Western defaults -- a helpful starting point, not a rule; always defer to their stated dietary preferences below over any cuisine assumption)`,
     `Activity level: ${activityLevel ?? "unknown"}`,
     `Health conditions: ${conditions.length ? conditions.join(", ") : "none reported"}`,
     `Dietary preferences/restrictions (always honor these in every food suggestion): ${dietaryText(profile)}`,

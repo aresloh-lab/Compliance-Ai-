@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { COUNTRIES } from "../countries.js";
 
 const CONDITIONS = [
   { id: "hypertension", label: "High blood pressure" },
@@ -25,6 +26,7 @@ const EMPTY = {
   gender: "",
   heightCm: "",
   weightKg: "",
+  nationality: "",
   goalWeightKg: "",
   activityLevel: "sedentary",
   conditions: [],
@@ -71,13 +73,14 @@ export default function Onboarding({ profile, onSave }) {
     setSaved(false);
   }
 
-  const isComplete = form.name.trim() && form.dob && form.gender && form.heightCm && form.weightKg;
+  const isComplete =
+    form.name.trim() && form.dob && form.gender && form.heightCm && form.weightKg && form.nationality.trim();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     if (!isComplete) {
-      setError("Name, date of birth, gender, height, and weight are required to register.");
+      setError("Name, date of birth, gender, height, weight, and nationality are required to register.");
       return;
     }
     setSaving(true);
@@ -130,7 +133,6 @@ export default function Onboarding({ profile, onSave }) {
             <option value="" disabled>Select...</option>
             <option value="female">Female</option>
             <option value="male">Male</option>
-            <option value="other">Other</option>
           </select>
         </div>
       </div>
@@ -144,6 +146,16 @@ export default function Onboarding({ profile, onSave }) {
           <label>Current weight (kg) *</label>
           <input type="number" min="1" value={form.weightKg} onChange={(e) => update("weightKg", e.target.value)} required />
         </div>
+      </div>
+
+      <div className="field">
+        <label>Nationality *</label>
+        <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
+          <option value="" disabled>Select...</option>
+          {COUNTRIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
       <div className="row">

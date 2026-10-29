@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { startRegistration, startAuthentication, platformAuthenticatorIsAvailable } from "@simplewebauthn/browser";
 import { Lock } from "lucide-react";
-import { api, authApi } from "../api.js";
+import { api, authApi, inviteApi } from "../api.js";
 import HeroIllustration from "./HeroIllustration.jsx";
+import { COUNTRIES } from "../countries.js";
 
 const SESSION_KEY = "weightCoachUnlocked";
 const LANDING_TAB_KEY = "weightCoachLandingTab";
@@ -14,6 +15,7 @@ const EMPTY_FORM = {
   gender: "",
   heightCm: "",
   weightKg: "",
+  nationality: "",
   username: "",
   password: "",
   confirmPassword: "",
@@ -50,6 +52,12 @@ export default function AuthGate({ children }) {
   const [recoverNewPassword, setRecoverNewPassword] = useState("");
   const [recoverConfirmPassword, setRecoverConfirmPassword] = useState("");
 
+  // A partner arrives via a ?invite=CODE link — the code is pre-filled, and
+  // claimNeedsProfile only flips on once the server tells us this code
+  // hasn't been claimed yet (a *returning* partner just needs the code).
+  const [inviteCode, setInviteCode] = useState("");
+  const [claimNeedsProfile, setClaimNeedsProfile] = useState(false);
+
   useEffect(() => {
     authApi
       .getStatus()
@@ -70,6 +78,12 @@ export default function AuthGate({ children }) {
 
     if (typeof PublicKeyCredential !== "undefined") {
       platformAuthenticatorIsAvailable().then(setBiometricAvailable).catch(() => setBiometricAvailable(false));
+    }
+
+    const codeFromUrl = new URLSearchParams(window.location.search).get("invite");
+    if (codeFromUrl) {
+      setInviteCode(codeFromUrl.trim());
+      setView("claim");
     }
   }, []);
 
@@ -109,7 +123,7 @@ export default function AuthGate({ children }) {
   async function submitRegister(e) {
     e.preventDefault();
     setError(null);
-    if (!form.name.trim() || !form.dob || !form.gender || !form.heightCm || !form.weightKg) {
+    if (!form.name.trim() || !form.dob || !form.gender || !form.heightCm || !form.weightKg || !form.nationality.trim()) {
       return setError("All fields are required to register.");
     }
     if (!form.username.trim()) return setError("Choose a login ID.");
@@ -134,6 +148,7 @@ export default function AuthGate({ children }) {
           gender: form.gender,
           heightCm: Number(form.heightCm),
           weightKg: Number(form.weightKg),
+          nationality: form.nationality.trim(),
           goalWeightKg: null,
           activityLevel: "sedentary",
           conditions: [],
@@ -181,6 +196,51 @@ export default function AuthGate({ children }) {
       setAfterRecoveryCode("unlock");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitClaim(e) {
+    e.preventDefault();
+    setError(null);
+    if (!inviteCode.trim()) return setError("Enter your invite code.");
+    if (
+      claimNeedsProfile &&
+      (!form.name.trim() || !form.dob || !form.gender || !form.heightCm || !form.weightKg || !form.nationality)
+    ) {
+      return setError("All fields are required.");
+    }
+
+    setBusy(true);
+    try {
+      await inviteApi.claim({
+        code: inviteCode.trim(),
+        profile: claimNeedsProfile
+          ? {
+              name: form.name.trim(),
+              dob: form.dob,
+              gender: form.gender,
+              heightCm: Number(form.heightCm),
+              weightKg: Number(form.weightKg),
+              nationality: form.nationality,
+              goalWeightKg: null,
+              activityLevel: "sedentary",
+              conditions: [],
+            }
+          : undefined,
+      });
+      sessionStorage.setItem(LANDING_TAB_KEY, "coach");
+      markUnlocked();
+    } catch (err) {
+      // First attempt is just the code, in case this is a *returning*
+      // partner (their code alone is enough) — only ask for profile details
+      // once the server confirms this code hasn't been claimed yet.
+      if (!claimNeedsProfile && /Registration requires/.test(err.message)) {
+        setClaimNeedsProfile(true);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -315,6 +375,90 @@ export default function AuthGate({ children }) {
     );
   }
 
+  // Reached via a ?invite=CODE link — no username/password, ever. The code
+  // itself is this account's permanent login, both for the first claim and
+  // every time after.
+  if (view === "claim") {
+    return (
+      <div style={{ maxWidth: 420, margin: "24px auto", padding: "0 16px" }}>
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>You've been invited</h2>
+          <p className="muted">
+            {claimNeedsProfile
+              ? "First time here — a quick profile so your plan can be personalized. This invite code is your login from now on, no separate password."
+              : "Confirm your invite code to continue."}
+          </p>
+
+          <form onSubmit={submitClaim}>
+            <div className="field">
+              <label>Invite code</label>
+              <input
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                placeholder="XXXX-XXXX"
+                style={{ textTransform: "uppercase", fontFamily: "monospace" }}
+                autoFocus
+                required
+              />
+            </div>
+
+            {claimNeedsProfile && (
+              <>
+                <div className="field">
+                  <label>Name *</label>
+                  <input value={form.name} onChange={(e) => update("name", e.target.value)} required />
+                </div>
+                <div className="row">
+                  <div className="field">
+                    <label>Date of birth *</label>
+                    <input type="date" max={TODAY} value={form.dob} onChange={(e) => update("dob", e.target.value)} required />
+                  </div>
+                  <div className="field">
+                    <label>Gender *</label>
+                    <select value={form.gender} onChange={(e) => update("gender", e.target.value)} required>
+                      <option value="" disabled>Select...</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="field">
+                    <label>Height (cm) *</label>
+                    <input type="number" min="1" value={form.heightCm} onChange={(e) => update("heightCm", e.target.value)} required />
+                  </div>
+                  <div className="field">
+                    <label>Weight (kg) *</label>
+                    <input type="number" min="1" value={form.weightKg} onChange={(e) => update("weightKg", e.target.value)} required />
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Nationality *</label>
+                  <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
+                    <option value="" disabled>Select...</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+
+            {error && <div className="error-banner">{error}</div>}
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button className="primary" type="submit" disabled={busy}>
+                {busy ? "Continuing..." : "Continue"}
+              </button>
+              <button type="button" className="secondary" onClick={goToLogin} disabled={busy}>
+                Not you? Log in instead
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   // Step 2/3: registration page.
   if (view === "register") {
     return (
@@ -346,7 +490,6 @@ export default function AuthGate({ children }) {
                     <option value="" disabled>Select...</option>
                     <option value="female">Female</option>
                     <option value="male">Male</option>
-                    <option value="other">Other</option>
                   </select>
                 </div>
               </div>
@@ -359,6 +502,15 @@ export default function AuthGate({ children }) {
                   <label>Weight (kg) *</label>
                   <input type="number" min="1" value={form.weightKg} onChange={(e) => update("weightKg", e.target.value)} required />
                 </div>
+              </div>
+              <div className="field">
+                <label>Nationality *</label>
+                <select value={form.nationality} onChange={(e) => update("nationality", e.target.value)} required>
+                  <option value="" disabled>Select...</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <div className="field">
                 <label>Login ID *</label>
