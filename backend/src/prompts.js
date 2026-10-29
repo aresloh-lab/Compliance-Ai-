@@ -86,22 +86,31 @@ function dietaryText(profile) {
   return all.length ? all.join(", ") : "none reported";
 }
 
-// Race/ethnicity is optional, asked directly, and used for exactly one
-// thing: WHO and multiple national health bodies document that
-// cardiometabolic risk (type 2 diabetes, hypertension) rises at a lower BMI
-// in Asian populations than the general-population cutoffs -- WHO's
-// commonly cited Asian-specific action points are overweight >=23 and
-// obese >=27.5, versus the general >=25/>=30. This is the one evidence-based
-// reason to ask; it should never otherwise shape tone, assumptions, or
-// anything besides this specific risk framing.
+// Race/ethnicity is optional, asked directly, and deliberately used for only
+// two narrow things -- it should never otherwise shape tone, assumptions, or
+// anything beyond these:
+//
+// 1. WHO and multiple national health bodies document that cardiometabolic
+//    risk (type 2 diabetes, hypertension) rises at a lower BMI in Asian
+//    populations than the general-population cutoffs -- WHO's commonly cited
+//    Asian-specific action points are overweight >=23 and obese >=27.5,
+//    versus the general >=25/>=30. This is evidence-based.
+// 2. For a few specific, well-documented community cuisines (not broad or
+//    vague categories -- see below), offer it as *inspiration for recipe
+//    variety*, never as an assumed restriction or a claim about what this
+//    particular person eats. Individual practice varies hugely within any
+//    group (religion, upbringing, personal taste, health needs all cut
+//    across it) -- the explicit dietary-preferences field above is always
+//    the source of truth for actual restrictions, this is strictly extra
+//    flavor-of-suggestion, and only when it adds real specificity beyond
+//    what nationality already provides.
 //
 // For some nationalities the race selector offers locally accurate options
 // (see frontend/src/raceOptions.js's COUNTRY_RACE_OPTIONS -- e.g. Malaysia:
 // Malay/Chinese/Indian/Other Bumiputera) instead of the generic "Asian", so
-// this needs to also recognize those as falling under the same WHO guidance
-// -- they're still Asian populations, just asked about more specifically.
-// Kept duplicated here (not imported) since frontend/backend are separate
-// workspaces with no shared module today; if that changes, unify it.
+// (1) needs to also recognize those as Asian populations under WHO's
+// guidance. Kept duplicated here (not imported) since frontend/backend are
+// separate workspaces with no shared module today; if that changes, unify it.
 const ASIAN_POPULATION_RACE_VALUES = new Set([
   "Asian",
   "Malay",
@@ -119,6 +128,24 @@ function raceRiskNote(race) {
   return "";
 }
 
+// Only community labels specific enough to name a real, well-known home
+// cuisine tradition get a hint -- broad/vague categories (e.g. generic
+// "Asian", "Black / African", "Hispanic / Latino" -- each spans wildly
+// different cuisines) and "Other Bumiputera" (itself dozens of distinct
+// indigenous Malaysian groups with distinct food traditions) are
+// deliberately left out rather than flattened into a guess.
+const CUISINE_HINTS = {
+  Malay: "Malay home-style dishes (e.g. rendang, sambal, ulam, grilled fish)",
+  Chinese: "Chinese-Malaysian/Singaporean home-style dishes (e.g. stir-fries, steamed fish, clear soups, claypot dishes)",
+  Indian: "Indian-Malaysian/Singaporean home-style dishes (e.g. dhal, curries, thosai, roti)",
+};
+
+function raceCuisineHint(race) {
+  const cuisine = CUISINE_HINTS[race];
+  if (!cuisine) return "";
+  return ` As one source of recipe variety (never a rule, never an assumption about what they personally eat -- always defer to their stated dietary preferences above), ${cuisine} can be a good starting point.`;
+}
+
 export function buildProfileSummary(profile) {
   if (!profile) return "No profile has been set up yet.";
   const {
@@ -130,7 +157,7 @@ export function buildProfileSummary(profile) {
     `Age: ${age ?? "unknown"}, Gender: ${gender ?? "unknown"}`,
     `Height: ${heightCm ?? "?"} cm, Current weight: ${weightKg ?? "?"} kg, Goal weight: ${goalWeightKg ?? "?"} kg`,
     `Nationality: ${nationality ?? "unknown"} (use this to favor food suggestions from dishes/cuisine actually familiar to them, e.g. local staples and home-style meals over generic Western defaults -- a helpful starting point, not a rule; always defer to their stated dietary preferences below over any cuisine assumption)`,
-    `Race/ethnicity: ${race || "not reported"}.${raceRiskNote(race)}`,
+    `Race/ethnicity: ${race || "not reported"}.${raceRiskNote(race)}${raceCuisineHint(race)}`,
     `Activity level: ${activityLevel ?? "unknown"}`,
     `Health conditions: ${conditions.length ? conditions.join(", ") : "none reported"}`,
     `Dietary preferences/restrictions (always honor these in every food suggestion): ${dietaryText(profile)}`,
